@@ -1,0 +1,37 @@
+@host = http://localhost:3000
+
+### 1) See one normalized review
+# @name getAllReviews
+GET {{host}}/api/reviews/hostaway
+Accept: application/json
+
+### 1.1) Show only the first item (optional pretty)
+# Tip: You can still inspect the full response above. This is just a helper.
+# @name firstReview
+GET {{host}}/api/reviews/hostaway
+Accept: application/json
+
+### Extract the first review's ID from the previous response
+# This variable will be available to later requests:
+@firstReviewId = {{getAllReviews.response.body.$.result[0].id}}
+
+### 2) Approve a review (uses extracted id)
+# If you want to approve a specific ID, replace {{firstReviewId}} with a number like 7453.
+POST {{host}}/api/reviews/approve
+Content-Type: application/json
+
+{
+  "id": "{{firstReviewId}}",
+  "approved": true
+}
+
+### 3) Fetch only approved reviews
+# @name approvedReviews
+GET {{host}}/api/reviews/hostaway?approved=true
+Accept: application/json
+
+### 3.1) Count approved reviews (quick check)
+# REST Client can evaluate script expressions in the UI output.
+# Just inspect the JSON length visually; or keep this as a reminder to verify the array length.
+GET {{host}}/api/reviews/hostaway?approved=true
+Accept: application/json
