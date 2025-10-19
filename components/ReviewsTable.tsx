@@ -17,9 +17,12 @@ export default function ReviewsTable({ rows, loading }: ReviewsTableProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, approved }),
       });
-      return res.json();
+      return res.json() as Promise<{ ok: boolean }>;
     },
-    onSuccess: () => qc.invalidateQueries(),
+    onSuccess: () => {
+      // invalidate all queries that start with "hostaway"
+      qc.invalidateQueries({ predicate: q => Array.isArray(q.queryKey) && q.queryKey[0] === "hostaway" });
+    },
   });
 
   if (loading) return <div>Loading…</div>;
@@ -39,7 +42,7 @@ export default function ReviewsTable({ rows, loading }: ReviewsTableProps) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r: any) => (
+          {rows.map((r: NormalizedReview) => (
             <tr key={r.id} className="border-b">
               <td className="p-2 align-top">
                 <input
@@ -52,11 +55,12 @@ export default function ReviewsTable({ rows, loading }: ReviewsTableProps) {
               <td className="p-2 align-top">{r.listingName || r.listingSlug}</td>
               <td className="p-2 align-top">{r.rating ?? "-"}</td>
               <td className="p-2 align-top">
-                {(Object.entries(r.categories || {}) as [string, number][]).map(([k, v]) => (
-                  <span key={k} className="mr-2 inline-block rounded bg-slate-100 px-2 py-0.5">
-                    {k}:{v}
-                  </span>
-                ))}
+                {(Object.entries(r.categories || {}) as [string, number][])
+                  .map(([k, v]) => (
+                    <span key={k} className="mr-2 inline-block rounded bg-slate-100 px-2 py-0.5">
+                      {k}:{v}
+                    </span>
+                  ))}
               </td>
               <td className="p-2 align-top max-w-xl">{r.text}</td>
             </tr>

@@ -1,7 +1,7 @@
 import { NormalizedReview, ReviewCategory } from "./types";
 import { getApprovedSet } from "./kv";
 
-type HostawayReview = {
+export type HostawayReview = {
   id: number;
   type: string;
   status: string;
