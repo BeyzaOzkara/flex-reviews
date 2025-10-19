@@ -35,6 +35,7 @@ export type ReviewRow = {
   property_id: string;       // listingSlug
   reviewer_name: string;
   comment: string;
+  categories: Record<string, number>;
   channel: "hostaway" | "google" | string;
   rating: number;            // 0–10 (or derived)
   review_date: string;       // ISO

@@ -59,6 +59,7 @@ export function useDashboardData() {
             property_id: r.listingSlug || "unknown",
             reviewer_name: r.guestName || "Guest",
             comment: r.text,
+            categories: r.categories,
             channel: r.channel,
             rating: s,
             review_date: r.submittedAt || new Date(0).toISOString(), // <— ISO string

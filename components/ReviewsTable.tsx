@@ -3,6 +3,9 @@ import { useState } from "react";
 import { Star, Calendar, Eye, EyeOff, MessageSquare } from "lucide-react";
 import type { Property, ReviewRow } from "@/lib/types";
 
+const pretty = (s: string) =>
+  s.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+
 export function ReviewsTable({
   reviews,
   properties,
@@ -38,6 +41,7 @@ export function ReviewsTable({
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Property</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Guest</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Rating</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Categories</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Channel</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Review</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
@@ -55,6 +59,22 @@ export function ReviewsTable({
                     <span className="font-semibold text-sm">{r.rating}</span>
                   </div>
                 </td>
+                <td className="px-6 py-4">
+                <div className="flex flex-wrap gap-1">
+                  {Object.entries(r.categories ?? {}).map(([k, v]) => (
+                    <span
+                      key={k}
+                      className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200"
+                      title={`${k.replace(/_/g, " ")}: ${v}/10`}
+                    >
+                      {pretty(k)}: {v}
+                    </span>
+                  ))}
+                  {!r.categories || Object.keys(r.categories).length === 0 ? (
+                    <span className="text-xs text-gray-400">—</span>
+                  ) : null}
+                </div>
+              </td>
                 <td className="px-6 py-4">
                   <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-700">
                     {r.channel}

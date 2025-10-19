@@ -24,10 +24,11 @@ export default function DashboardPage() {
     approved: "",
   });
 
-  const categories = useMemo(
-    () => Array.from(new Set(properties.map((p) => p.category))),
-    [properties]
-  );
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    reviews.forEach(r => Object.keys(r.categories ?? {}).forEach(k => set.add(k)));
+    return Array.from(set).sort();
+  }, [reviews]);
   const channels = useMemo(
     () => Array.from(new Set(reviews.map((r) => r.channel))),
     [reviews]
@@ -47,11 +48,14 @@ export default function DashboardPage() {
       );
     }
     if (filters.category) {
-      const ids = properties.filter((p) => p.category === filters.category).map((p) => p.id);
-      filtered = filtered.filter((r) => ids.includes(r.property_id));
+      const key = filters.category.toLowerCase();
+      filtered = filtered.filter((r) => r.categories && key in r.categories);
     }
     if (filters.channel) filtered = filtered.filter((r) => r.channel === filters.channel);
-    if (filters.rating) filtered = filtered.filter((r) => r.rating === parseInt(filters.rating));
+    if (filters.rating) {
+      const min = parseInt(filters.rating, 10);
+      filtered = filtered.filter((r) => (r.rating ?? 0) >= min);
+    }
     if (filters.timeRange) {
       const days = parseInt(filters.timeRange);
       const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - days);
