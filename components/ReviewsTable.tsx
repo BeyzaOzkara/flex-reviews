@@ -1,7 +1,13 @@
 "use client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { NormalizedReview } from "@/lib/types";
 
-export default function ReviewsTable({ rows, loading }: any) {
+interface ReviewsTableProps {
+  rows: NormalizedReview[];
+  loading: boolean;
+}
+
+export default function ReviewsTable({ rows, loading }: ReviewsTableProps) {
   const qc = useQueryClient();
 
   const mut = useMutation({
@@ -46,7 +52,7 @@ export default function ReviewsTable({ rows, loading }: any) {
               <td className="p-2 align-top">{r.listingName || r.listingSlug}</td>
               <td className="p-2 align-top">{r.rating ?? "-"}</td>
               <td className="p-2 align-top">
-                {Object.entries(r.categories || {}).map(([k, v]) => (
+                {(Object.entries(r.categories || {}) as [string, number][]).map(([k, v]) => (
                   <span key={k} className="mr-2 inline-block rounded bg-slate-100 px-2 py-0.5">
                     {k}:{v}
                   </span>

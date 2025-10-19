@@ -1,3 +1,4 @@
+import { NormalizedReview } from "@/lib/types";
 export default async function PropertyPage({ params }: { params: { slug: string } }) {
   const base = process.env.NEXT_PUBLIC_BASE_URL || "";
   const res = await fetch(`${base}/api/reviews/hostaway?listing=${params.slug}&approved=true`, {
@@ -14,7 +15,7 @@ export default async function PropertyPage({ params }: { params: { slug: string 
       </header>
 
       <section className="grid md:grid-cols-2 gap-4">
-        {(result || []).map((r: any) => (
+        {(result || []).map((r: NormalizedReview) => (
           <article key={r.id} className="rounded-2xl border p-4 shadow-sm">
             <div className="text-sm opacity-70">{new Date(r.submittedAt).toLocaleDateString()}</div>
             <div className="mt-1 font-medium">{r.guestName || "Guest"}</div>

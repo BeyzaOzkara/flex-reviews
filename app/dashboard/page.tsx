@@ -15,7 +15,13 @@ export default function DashboardPage() {
 }
 
 function Inner() {
-  const [params, setParams] = useState<any>({ approved: false, minRating: "", listing: "" });
+  type Params = { approved: boolean; minRating: string; listing: string };
+
+  const [params, setParams] = useState<Params>({
+    approved: false,
+    minRating: "",
+    listing: "",
+  });
 
   const qs = new URLSearchParams();
   if (params.listing) qs.set("listing", params.listing);
