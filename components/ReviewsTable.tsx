@@ -1,72 +1,96 @@
-"use client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { NormalizedReview } from "@/lib/types";
+// components/ReviewsTable.tsx
+import { useState } from "react";
+import { Star, Calendar, Eye, EyeOff, MessageSquare } from "lucide-react";
+import type { Property, ReviewRow } from "@/lib/types";
 
-interface ReviewsTableProps {
-  rows: NormalizedReview[];
-  loading: boolean;
-}
+export function ReviewsTable({
+  reviews,
+  properties,
+  onToggleApproved,
+}: {
+  reviews: ReviewRow[];
+  properties: Property[];
+  onToggleApproved: (reviewId: string, approved: boolean) => Promise<void>;
+}) {
+  const [toggling, setToggling] = useState<string | null>(null);
 
-export default function ReviewsTable({ rows, loading }: ReviewsTableProps) {
-  const qc = useQueryClient();
+  const nameOf = (id: string) => properties.find((p) => p.id === id)?.name ?? "Unknown Property";
+  const fmt = (s: string) => {
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
+  };
 
-  const mut = useMutation({
-    mutationFn: async ({ id, approved }: { id: string; approved: boolean }) => {
-      const res = await fetch("/api/reviews/approve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, approved }),
-      });
-      return res.json() as Promise<{ ok: boolean }>;
-    },
-    onSuccess: () => {
-      // invalidate all queries that start with "hostaway"
-      qc.invalidateQueries({ predicate: q => Array.isArray(q.queryKey) && q.queryKey[0] === "hostaway" });
-    },
-  });
-
-  if (loading) return <div>Loading…</div>;
-  if (!rows?.length) return <div>No reviews found.</div>;
+  if (!reviews.length) {
+    return (
+      <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+        <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+        <p className="text-gray-500">No reviews found</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm border-collapse">
-        <thead>
-          <tr className="bg-slate-100 text-left">
-            <th className="p-2">Approved</th>
-            <th className="p-2">Date</th>
-            <th className="p-2">Listing</th>
-            <th className="p-2">Rating</th>
-            <th className="p-2">Categories</th>
-            <th className="p-2">Text</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r: NormalizedReview) => (
-            <tr key={r.id} className="border-b">
-              <td className="p-2 align-top">
-                <input
-                  type="checkbox"
-                  checked={r.approved}
-                  onChange={(e) => mut.mutate({ id: r.id, approved: e.target.checked })}
-                />
-              </td>
-              <td className="p-2 align-top">{new Date(r.submittedAt).toLocaleDateString()}</td>
-              <td className="p-2 align-top">{r.listingName || r.listingSlug}</td>
-              <td className="p-2 align-top">{r.rating ?? "-"}</td>
-              <td className="p-2 align-top">
-                {(Object.entries(r.categories || {}) as [string, number][])
-                  .map(([k, v]) => (
-                    <span key={k} className="mr-2 inline-block rounded bg-slate-100 px-2 py-0.5">
-                      {k}:{v}
-                    </span>
-                  ))}
-              </td>
-              <td className="p-2 align-top max-w-xl">{r.text}</td>
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-200">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Property</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Guest</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Rating</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Channel</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Review</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Approved</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {reviews.map((r) => (
+              <tr key={r.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4"><div className="font-medium text-gray-900 text-sm">{nameOf(r.property_id)}</div></td>
+                <td className="px-6 py-4 text-sm text-gray-900">{r.reviewer_name}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                    <span className="font-semibold text-sm">{r.rating}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-700">
+                    {r.channel}
+                  </span>
+                </td>
+                <td className="px-6 py-4 max-w-md">
+                  <div className="text-sm text-gray-600 line-clamp-2">{r.comment}</div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <Calendar className="w-4 h-4" />
+                    {fmt(r.review_date)}
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <button
+                    onClick={async () => {
+                      setToggling(r.id);
+                      try { await onToggleApproved(r.id, !r.is_approved); }
+                      finally { setToggling(null); }
+                    }}
+                    disabled={toggling === r.id}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      r.is_approved ? "bg-green-50 text-green-700 hover:bg-green-100"
+                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    } disabled:opacity-50`}
+                  >
+                    {r.is_approved ? (<><Eye className="w-4 h-4"/><span>Approved</span></>)
+                                   : (<><EyeOff className="w-4 h-4"/><span>Pending</span></>)}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

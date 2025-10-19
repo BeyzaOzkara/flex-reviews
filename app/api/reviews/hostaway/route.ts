@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import raw from "@/lib/hostawayMock.json";
-import { normalizeHostaway, HostawayReview } from "@/lib/normalize";
-
-type HostawayMock = {
-  status: string;
-  result: HostawayReview[];
-};
+import { normalizeHostaway } from "@/lib/normalize";
+import { getHostawayReviews } from "@/lib/sources";
+import type { NormalizedReview } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -15,18 +11,22 @@ export async function GET(req: NextRequest) {
   const end = url.searchParams.get("end");
   const approvedOnly = url.searchParams.get("approved") === "true";
 
-  const data = raw as HostawayMock;
-  const items: HostawayReview[] = Array.isArray(data?.result) ? data.result : [];
+  // 1) Get reviews (live first, mock fallback)
+  const { items, source } = await getHostawayReviews();
 
-  let result = await normalizeHostaway(items);
+  // 2) Normalize to your final shape
+  let result: NormalizedReview[] = await normalizeHostaway(items);
 
-  if (listing) result = result.filter(r => r.listingSlug === listing || r.listingName === listing);
-  if (minRating) result = result.filter(r => (r.rating ?? 0) >= Number(minRating));
-  if (start) result = result.filter(r => r.submittedAt >= new Date(start).toISOString());
-  if (end) result = result.filter(r => r.submittedAt <= new Date(end).toISOString());
-  if (approvedOnly) result = result.filter(r => r.approved);
+  // 3) Server-side filters (same as before)
+  if (listing) result = result.filter((r) => r.listingSlug === listing || r.listingName === listing);
+  if (minRating) result = result.filter((r) => (r.rating ?? 0) >= Number(minRating));
+  if (start) result = result.filter((r) => r.submittedAt >= new Date(start).toISOString());
+  if (end) result = result.filter((r) => r.submittedAt <= new Date(end).toISOString());
+  if (approvedOnly) result = result.filter((r) => r.approved);
 
+  // newest first
   result = result.sort((a, b) => (a.submittedAt < b.submittedAt ? 1 : -1));
 
-  return NextResponse.json({ status: "success", result });
+  // 4) Return with a tiny bit of metadata so you (and reviewers) can see if it used live or mock
+  return NextResponse.json({ status: "success", source, result });
 }
