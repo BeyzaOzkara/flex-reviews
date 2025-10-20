@@ -8,7 +8,7 @@ export default function FlexHeader() {
         {/* --- Logo (fixed left) --- */}
         <div className="absolute left-10 flex items-center gap-3">
           <Image
-            src="/logo-flex.webp" // put logo under /public/
+            src="/logo-flex.png" // put logo under /public/
             alt="The Flex Logo"
             width={150}
             height={150}

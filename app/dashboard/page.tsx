@@ -70,7 +70,7 @@ export default function DashboardPage() {
     return filtered.sort(
       (a, b) => new Date(b.review_date).getTime() - new Date(a.review_date).getTime()
     );
-  }, [reviews, properties, selectedProperty, filters]);
+  }, [reviews, selectedProperty, filters]);
 
   const filteredProperties = useMemo(
     () => (filters.category ? properties.filter((p) => p.category === filters.category) : properties),

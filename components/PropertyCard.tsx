@@ -1,4 +1,4 @@
-"use client"; // ensure client so onClick + stopPropagation work
+"use client";
 
 import Image from "next/image";
 import type { Property } from "@/lib/types";
@@ -11,12 +11,11 @@ export function PropertyCard({
   property: Property;
   onClick?: () => void;
 }) {
-  // choose the slug we route with
-  const slug = (property as any).slug ?? property.id; // adjust if your type already has slug
+  // Use the listing slug; in our model, `id` is the slug
+  const slug: string = property.id;
 
   return (
     <div className="text-left rounded-2xl border bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      {/* clickable area to open Reviews tab / selection */}
       <button onClick={onClick} className="w-full text-left">
         <div className="relative h-40 w-full">
           <Image
@@ -24,6 +23,7 @@ export function PropertyCard({
             alt={property.name}
             fill
             className="object-cover"
+            sizes="(max-width: 768px) 100vw, 33vw"
           />
         </div>
         <div className="p-4 space-y-2">
@@ -41,9 +41,11 @@ export function PropertyCard({
             <span className="font-medium">
               {property.avg_rating === null
                 ? "—"
-                : (Math.round(property.avg_rating * 10) / 10).toFixed(1)}
+                : (Math.round((property.avg_rating ?? 0) * 10) / 10).toFixed(1)}
             </span>
-            <span className="text-slate-500">({property.review_count} reviews)</span>
+            <span className="text-slate-500">
+              ({property.review_count} reviews)
+            </span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5">
@@ -55,11 +57,9 @@ export function PropertyCard({
         </div>
       </button>
 
-      {/* explicit CTA to property page */}
       <div className="p-3 border-t bg-slate-50 flex justify-end">
         <Link
           href={`/property/${slug}`}
-          // stop the card's onClick from hijacking this click
           onClick={(e) => e.stopPropagation()}
           className="text-sm font-medium text-slate-700 hover:text-slate-900 hover:underline"
           prefetch={false}

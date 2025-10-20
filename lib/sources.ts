@@ -1,5 +1,5 @@
 import raw from "@/lib/hostawayMock.json";
-import type { ReviewCategory } from "./types";
+// import type { ReviewCategory } from "./types";
 import type { HostawayReview } from "./normalize"; // you exported this earlier
 
 type HostawayApiResponse = {
