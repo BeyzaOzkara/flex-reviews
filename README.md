@@ -4,7 +4,7 @@ This project was built as part of the **Flex Living Developer Assessment**.
 It provides a modern manager dashboard for monitoring, filtering, and approving guest reviews,  
 along with a public property page displaying approved reviews only.
 
-Deployed app: [https://flex-reviews.vercel.app](https://flex-reviews.vercel.app)
+Deployed app: ...
 
 ---
 
